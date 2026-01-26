@@ -13,8 +13,7 @@ function openDB() {
  const store = db.createObjectStore('contactos', { keyPath: 'id', autoIncrement:
 true });
  store.createIndex('name', 'name', { unique: false });
- store.createIndex('email', 'email', { unique: true }); // Email único para evitar
-duplicados
+ store.createIndex('email', 'email', { unique: true }); // Email único para evitar duplicados
  }
  };
  // Evento: Éxito al abrir
