@@ -106,3 +106,134 @@ document.addEventListener('DOMContentLoaded', async () => {
  document.getElementById('contactId').value = '';
  });
 });
+
+function renderList(contacts) {
+    const list = document.getElementById('contactList');
+    list.innerHTML = ''; // Limpia la lista
+
+    if (contacts.length === 0) {
+        list.innerHTML = '<li>No se encontraron contactos.</li>';
+        return;
+    }
+
+    contacts.forEach(function(contact) {
+        const li = document.createElement('li');
+        li.innerHTML = `<span>${contact.name} - ${contact.email} - ${contact.phone}</span>`;
+        
+        // Contenedor de botones
+        const btnContainer = document.createElement('div');
+
+        // Botón Editar
+        const editBtn = document.createElement('button');
+        editBtn.textContent = 'Editar';
+        editBtn.classList.add('edit');
+        editBtn.onclick = function() {
+            document.getElementById('contactId').value = contact.id;
+            document.getElementById('name').value = contact.name;
+            document.getElementById('email').value = contact.email;
+            document.getElementById('phone').value = contact.phone;
+        };
+
+        // Botón Eliminar
+        const deleteBtn = document.createElement('button');
+        deleteBtn.textContent = 'Eliminar';
+        deleteBtn.onclick = function() {
+            deleteContact(contact.id);
+        };
+
+        btnContainer.appendChild(editBtn);
+        btnContainer.appendChild(deleteBtn);
+        li.appendChild(btnContainer);
+        list.appendChild(li);
+    });
+}
+
+// Modificamos loadContacts para usar renderList con .then()
+function loadContacts() {
+    // getAllContacts devuelve una promesa, usamos .then en lugar de await
+    getAllContacts().then(function(contacts) {
+        renderList(contacts);
+    });
+}
+
+
+function searchByName(query) {
+    // Si la búsqueda está vacía, cargamos todo
+    if (!query.trim()) {
+        loadContacts();
+        return;
+    }
+
+    const lowerQuery = query.toLowerCase();
+
+    const transaction = db.transaction(['contactos'], 'readonly');
+    const store = transaction.objectStore('contactos');
+    const index = store.index('name'); // Usamos el índice 'name'
+    
+    // Obtenemos todos los registros
+    const request = index.getAll();
+
+    request.onsuccess = function() {
+        const allContacts = request.result;
+        // Filtramos en memoria
+        const filtered = allContacts.filter(function(c) {
+            return c.name.toLowerCase().includes(lowerQuery);
+        });
+        renderList(filtered);
+    };
+
+    request.onerror = function(e) {
+        console.error("Error buscando:", e);
+    };
+}
+
+// Inicialización
+document.addEventListener('DOMContentLoaded', function() {
+    // openDB devuelve promesa, encadenamos con .then
+    openDB().then(function() {
+        loadContacts();
+    });
+
+    document.getElementById('contactForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const id = document.getElementById('contactId').value;
+        const contact = {
+            name: document.getElementById('name').value,
+            email: document.getElementById('email').value,
+            phone: document.getElementById('phone').value
+        };
+
+        let actionPromise;
+
+        if (id) {
+            contact.id = parseInt(id);
+            actionPromise = updateContact(contact);
+        } else {
+            actionPromise = addContact(contact);
+        }
+
+        // Se espera a que termine la acción (add o update) para limpiar
+        actionPromise.then(function() {
+            document.getElementById('contactForm').reset();
+            document.getElementById('contactId').value = '';
+            
+            // Limpiamos el buscador para evitar inconsistencias visuales
+            document.getElementById('searchInput').value = '';
+        });
+    });
+    
+    const searchInput = document.getElementById('searchInput');
+    const clearBtn = document.getElementById('clearSearchBtn');
+
+    // Buscar mientras se escribe
+    searchInput.addEventListener('input', function(e) {
+        searchByName(e.target.value);
+    });
+
+    // Botón Limpiar
+    clearBtn.addEventListener('click', function() {
+        searchInput.value = '';
+        loadContacts(); 
+    });
+});
