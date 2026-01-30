@@ -1,33 +1,26 @@
-// ================== CONFIG DB ==================
 const dbName = 'ContactosDB';
 const dbVersion = 1;
 let db;
 
-// ================== OPEN DB ==================
 function openDB() {
     return new Promise((resolve, reject) => {
         const request = indexedDB.open(dbName, dbVersion);
-
         request.onupgradeneeded = (event) => {
             db = event.target.result;
-
             if (!db.objectStoreNames.contains('contactos')) {
                 const store = db.createObjectStore('contactos', { keyPath: 'id', autoIncrement: true });
                 store.createIndex('name', 'name', { unique: false });
                 store.createIndex('email', 'email', { unique: true });
             }
         };
-
         request.onsuccess = (event) => {
             db = event.target.result;
             resolve(db);
         };
-
         request.onerror = (event) => reject(event.target.error);
     });
 }
 
-// ================== CRUD ==================
 function addContact(contact) {
     return new Promise((resolve) => {
         const tx = db.transaction(['contactos'], 'readwrite');
@@ -64,36 +57,29 @@ function getAllContacts() {
     });
 }
 
-// ================== RENDER ==================
 function renderList(contacts) {
     const list = document.getElementById('contactList');
     list.innerHTML = '';
-
     if (contacts.length === 0) {
         list.innerHTML = '<li>No se encontraron contactos.</li>';
         return;
     }
-
     contacts.forEach(contact => {
         const li = document.createElement('li');
         li.innerHTML = `<span>${contact.name} - ${contact.email} - ${contact.phone}</span>`;
-
         const btnContainer = document.createElement('div');
-
         const editBtn = document.createElement('button');
         editBtn.textContent = 'Editar';
         editBtn.classList.add('edit');
         editBtn.onclick = () => {
-            contactId.value = contact.id;
-            name.value = contact.name;
-            email.value = contact.email;
-            phone.value = contact.phone;
+            document.getElementById('contactId').value = contact.id;
+            document.getElementById('name').value = contact.name;
+            document.getElementById('email').value = contact.email;
+            document.getElementById('phone').value = contact.phone;
         };
-
         const deleteBtn = document.createElement('button');
         deleteBtn.textContent = 'Eliminar';
         deleteBtn.onclick = () => deleteContact(contact.id);
-
         btnContainer.append(editBtn, deleteBtn);
         li.appendChild(btnContainer);
         list.appendChild(li);
@@ -104,19 +90,16 @@ function loadContacts() {
     getAllContacts().then(renderList);
 }
 
-// ================== SEARCH ==================
 function searchByName(query) {
     if (!query.trim()) {
         loadContacts();
         return;
     }
-
     const lower = query.toLowerCase();
     const tx = db.transaction(['contactos'], 'readonly');
     const store = tx.objectStore('contactos');
     const index = store.index('name');
     const request = index.getAll();
-
     request.onsuccess = () => {
         const filtered = request.result.filter(c =>
             c.name.toLowerCase().includes(lower)
@@ -125,65 +108,68 @@ function searchByName(query) {
     };
 }
 
-// ================== EXPORT ==================
 async function exportContacts() {
     const contacts = await getAllContacts();
     const blob = new Blob([JSON.stringify(contacts, null, 2)], { type: 'application/json' });
-
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = 'contactos_backup.json';
     a.click();
-
     URL.revokeObjectURL(a.href);
 }
 
-// ================== IMPORT ==================
 async function importContacts(file) {
     const text = await file.text();
     const data = JSON.parse(text);
-
     const tx = db.transaction(['contactos'], 'readwrite');
     const store = tx.objectStore('contactos');
     const indexEmail = store.index('email');
-
     for (const contact of data) {
         await new Promise(resolve => {
             const req = indexEmail.get(contact.email);
             req.onsuccess = () => {
-                if (!req.result) store.add(contact);
+                if (!req.result) {
+                    delete contact.id;
+                    store.add(contact);
+                }
                 resolve();
             };
         });
     }
-
     tx.oncomplete = () => {
         loadContacts();
         alert('Importación completada');
     };
 }
 
-// ================== INIT ==================
 document.addEventListener('DOMContentLoaded', async () => {
     await openDB();
     loadContacts();
 
+    const contactForm = document.getElementById('contactForm');
+    const contactId = document.getElementById('contactId');
+    const nameInput = document.getElementById('name');
+    const emailInput = document.getElementById('email');
+    const phoneInput = document.getElementById('phone');
+    const searchInput = document.getElementById('searchInput');
+    const clearSearchBtn = document.getElementById('clearSearchBtn');
+    const exportBtn = document.getElementById('exportar');
+    const importBtn = document.getElementById('importar');
+    const fileInput = document.getElementById('fileInput');
+
     contactForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-
         const contact = {
-            name: name.value,
-            email: email.value,
-            phone: phone.value
+            name: nameInput.value,
+            email: emailInput.value,
+            phone: phoneInput.value
         };
-
         if (contactId.value) {
             contact.id = parseInt(contactId.value);
             await updateContact(contact);
         } else {
             await addContact(contact);
         }
-
         contactForm.reset();
         contactId.value = '';
         searchInput.value = '';
@@ -198,10 +184,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         loadContacts();
     };
 
-    exportar.onclick = exportContacts;
-
-    importar.onclick = () => fileInput.click();
-
+    exportBtn.onclick = exportContacts;
+    importBtn.onclick = () => fileInput.click();
     fileInput.onchange = e => {
         if (e.target.files.length) {
             importContacts(e.target.files[0]);
