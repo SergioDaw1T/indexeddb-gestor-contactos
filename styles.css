@@ -53,3 +53,20 @@ li button.edit {
 .botones {
     margin: 15px 0;
 }
+
+#searchContainer {
+    margin: 20px 0;
+    display: flex;
+    gap: 10px;
+}
+
+#searchInput {
+    flex-grow: 1;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+#clearSearchBtn {
+    background-color: #607D8B;
+}
