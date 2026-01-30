@@ -7,3 +7,20 @@ li { border: 1px solid ddd; padding: 10px; margin-bottom: 10px; display: flex; j
 li button { margin-left: 10px; background: f44336; color: white; border: none; padding: 5px
 10px; cursor: pointer; }
 li button.edit { background: FFC107; color: black; }
+
+#searchContainer {
+    margin: 20px 0;
+    display: flex;
+    gap: 10px;
+}
+
+#searchInput {
+    flex-grow: 1;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+#clearSearchBtn {
+    background-color: #607D8B;
+}
