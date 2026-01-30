@@ -6,21 +6,35 @@
         <title>Ejercicio IndexedDB: Gestor de Contactos</title>
         <link rel="stylesheet" href="styles.css">
     </head>
+
     <body>
         <h1>Gestor de Contactos con IndexedDB</h1>
+
         <!-- Formulario para añadir o editar contactos -->
         <form id="contactForm">
             <input type="hidden" id="contactId"> <!-- ID oculto para ediciones -->
+
             <label for="name">Nombre:</label>
             <input type="text" id="name" required>
+
             <label for="email">Email:</label>
             <input type="email" id="email" required>
+
             <label for="phone">Teléfono:</label>
             <input type="tel" id="phone" required>
+
             <button type="submit">Añadir/Guardar</button>
         </form>
+
+        <div class="botones">
+            <button id="exportar">Exportar JSON</button>
+            <button id="importar">Importar JSON</button>
+            <input type="file" id="fileInput" accept=".json" hidden>
+        </div>
+
         <!-- Lista de contactos -->
         <ul id="contactList"></ul>
+
         <script src="script.js"></script>
     </body>
 </html>

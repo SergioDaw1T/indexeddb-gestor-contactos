@@ -1,9 +1,55 @@
-body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
-form { display: grid; gap: 10px; }
-input { padding: 5px; }
-button { padding: 10px; background: 4CAF50; color: white; border: none; cursor: pointer; }
-ul { list-style: none; padding: 0; }
-li { border: 1px solid ddd; padding: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-li button { margin-left: 10px; background: f44336; color: white; border: none; padding: 5px
-10px; cursor: pointer; }
-li button.edit { background: FFC107; color: black; }
+body { 
+    font-family: Arial, sans-serif;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+form {
+    display: grid;
+    gap: 10px;
+}
+
+input {
+    padding: 5px;
+}
+
+button {
+    padding: 10px;
+    background: 4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+}
+
+li {
+    border: 1px solid ddd;
+    padding: 10px;
+    margin-bottom: 10px;
+    display: flex; 
+    justify-content: space-between;
+    align-items: center;
+}
+
+li button {
+    margin-left: 10px;
+    background: f44336;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+li button.edit {
+    background: FFC107;
+    color: black;
+}
+
+.botones {
+    margin: 15px 0;
+}
